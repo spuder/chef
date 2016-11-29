@@ -44,6 +44,7 @@ require "chef/chef_fs/data_handler/role_data_handler"
 require "chef/chef_fs/data_handler/user_data_handler"
 require "chef/chef_fs/data_handler/group_data_handler"
 require "chef/chef_fs/data_handler/container_data_handler"
+require "chef"
 
 class Chef
   module ChefFS
@@ -109,7 +110,14 @@ class Chef
             else
               child_paths[name].each do |path|
                 begin
-                  Dir.mkdir(path)
+                  events = Chef::EventDispatch::Dispatcher.new
+                  node = Chef::Node.new
+                  run_context = Chef::RunContext.new(node, {}, events)
+                  dir = Chef::Resource::Directory.new(path, run_context)
+                  dir.mode(0700) unless Chef::Platform.windows?
+                  dir.rights(:full_control, ENV["USERNAME"]) if Chef::Platform.windows?
+                  dir.inherits(false) if Chef::Platform.windows?
+                  dir.run_action(:create)
                 rescue Errno::EEXIST
                 end
               end

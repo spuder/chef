@@ -20,6 +20,7 @@
 require "chef/chef_fs/file_system/repository/node"
 require "chef/chef_fs/file_system/repository/directory"
 require "chef/chef_fs/file_system/exceptions"
+require "chef"
 
 class Chef
   module ChefFS
@@ -29,6 +30,19 @@ class Chef
 
           def make_child_entry(child_name)
             Node.new(child_name, self)
+          end
+
+          def create_child(child_name, file_contents = nil)
+            child = super
+            events = Chef::EventDispatch::Dispatcher.new
+            node = Chef::Node.new
+            run_context = Chef::RunContext.new(node, {}, events)
+            file = Chef::Resource::File.new(child.file_path, run_context)
+            file.mode(0600) unless Chef::Platform.windows?
+            file.rights([:read, :write], ENV["USERNAME"]) if Chef::Platform.windows?
+            file.inherits(false) if Chef::Platform.windows?
+            file.run_action(:create)
+            child
           end
         end
       end
