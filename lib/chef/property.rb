@@ -518,6 +518,18 @@ class Chef
       # be using the existing getter/setter to manipulate it instead.
       return if !instance_variable_name
 
+      # If the property name is already an existing Ruby method, this could be bad.
+      # For example, the resource may implement #hash which is used internally by
+      # Ruby when adding the object to other data structures, like Hashes.
+      # Let's warn the user that this is bad. Avoid warnings on the core
+      # Chef::Resource class, where properties like `name` may be implemented
+      # and are safe.
+      if declared_in.respond_to?(name) && declared_in != Chef::Resource
+        resource_name = declared_in.respond_to?(:resource_name) ? declared_in.resource_name : declared_in
+        Chef.deprecated(:property_name_collision, "Property `#{name}` of resource `#{resource_name}` is already an existing Ruby method. " \
+          "This could be dangerous and cause unexpected behavior. This will raise an exception in Chef 13.")
+      end
+
       # We prefer this form because the property name won't show up in the
       # stack trace if you use `define_method`.
       declared_in.class_eval <<-EOM, __FILE__, __LINE__ + 1

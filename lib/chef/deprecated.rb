@@ -156,6 +156,16 @@ class Chef
       end
     end
 
+    class PropertyNameCollision < Base
+      def id
+        10
+      end
+
+      def target
+        "property_name_collision.html"
+      end
+    end
+
     class ResourceCloning < Base
       def id
         3694
