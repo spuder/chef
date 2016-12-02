@@ -526,8 +526,8 @@ class Chef
       # and are safe.
       if declared_in.respond_to?(name) && declared_in != Chef::Resource
         resource_name = declared_in.respond_to?(:resource_name) ? declared_in.resource_name : declared_in
-        Chef.deprecated(:property_name_collision, "Property `#{name}` of resource `#{resource_name}` is already an existing Ruby method. " \
-          "This could be dangerous and cause unexpected behavior. This will raise an exception in Chef 13.")
+        Chef.deprecated(:property_name_collision, "Property #{name} of resource #{resource_name} overwrites an existing method. " \
+          "Please use a different property name. This will raise an exception in Chef 13.")
       end
 
       # We prefer this form because the property name won't show up in the

@@ -158,7 +158,7 @@ class Chef
 
     class PropertyNameCollision < Base
       def id
-        10
+        11
       end
 
       def target
